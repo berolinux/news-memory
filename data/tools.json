@@ -1,0 +1,98 @@
+{
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "search_dossiers",
+        "description": "Find living topic dossiers (per-country, per-person, or pair relations). Use for any 'what is going on with X' or 'relations between A and B' question. Not limited to wars.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {"type": "string"},
+            "limit": {"type": "integer", "default": 5}
+          },
+          "required": ["query"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "search_events",
+        "description": "Search dated events (elections, taxes, inflation, protests, wars, disasters, appointments, court cases, ...). Filter by entity names and date range.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {"type": "string"},
+            "entities": {"type": "array", "items": {"type": "string"}},
+            "event_type": {"type": "string"},
+            "date_from": {"type": "string", "description": "YYYY-MM-DD"},
+            "date_to": {"type": "string", "description": "YYYY-MM-DD"},
+            "limit": {"type": "integer", "default": 20}
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_timeline",
+        "description": "Ordered timeline for one or more named entities. This is the right tool for 'what happened in country A between 2026 and 2028'.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "entities": {"type": "array", "items": {"type": "string"}},
+            "date_from": {"type": "string"},
+            "date_to": {"type": "string"},
+            "limit": {"type": "integer", "default": 40}
+          },
+          "required": ["entities"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_background",
+        "description": "Assemble background for a why/how question about a country, person, or conflict. Pulls the entity dossier, recent office-holders (president, PM, ...), and several years of politics/economy/conflict events. Use this for questions like 'why did country A oust its president' or 'context of the conflict between A and B'.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {"type": "string"},
+            "as_of": {"type": "string", "description": "YYYY-MM-DD, default today"},
+            "years": {"type": "integer", "default": 5}
+          },
+          "required": ["query"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_article",
+        "description": "Fetch one source article by id (from a dossier timeline or event).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "article_id": {"type": "integer"}
+          },
+          "required": ["article_id"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "resolve_entity",
+        "description": "Look up a name (country, person, org, city) in the knowledge base, including aliases.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"}
+          },
+          "required": ["name"]
+        }
+      }
+    }
+  ]
+}

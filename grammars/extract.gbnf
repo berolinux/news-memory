@@ -1,0 +1,85 @@
+root ::= "{" ws
+  "\"headline\"" ws ":" ws string "," ws
+  "\"summary\"" ws ":" ws string "," ws
+  "\"summary_en\"" ws ":" ws string "," ws
+  "\"lang\"" ws ":" ws lang "," ws
+  "\"happened_at\"" ws ":" ws date "," ws
+  "\"event_type\"" ws ":" ws event-type "," ws
+  "\"tags\"" ws ":" ws tag-list "," ws
+  "\"importance\"" ws ":" ws importance "," ws
+  "\"geo_countries\"" ws ":" ws iso-list "," ws
+  "\"entities\"" ws ":" ws entity-list "," ws
+  "\"relations\"" ws ":" ws rel-list "," ws
+  "\"pair_topics\"" ws ":" ws pair-list
+ws "}"
+
+ws ::= [ \t\n\r]*
+
+string ::= "\"" chars "\""
+chars ::= char*
+char ::= [^"\\\x00-\x1F] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F])
+
+date ::= "\"" [0-9][0-9][0-9][0-9] "-" [0-1][0-9] "-" [0-3][0-9] "\""
+lang ::= "\"" [a-z][a-z] "\""
+
+event-type ::= "\"" (
+  "conflict" | "diplomacy" | "politics" | "economy" |
+  "disaster" | "legal" | "science" | "society" | "other"
+) "\""
+
+tag ::= "\"" (
+  "war" | "sanctions" | "ceasefire" | "treaty" | "election" |
+  "coup" | "resignation" | "appointment" | "protest" | "inflation" |
+  "tax" | "budget" | "recession" | "scandal" | "court" |
+  "legislation" | "strike" | "epidemic" | "disaster" | "speech" |
+  "refugees" | "energy" | "trade" | "other"
+) "\""
+
+tag-list ::= "[" ws (tag (ws "," ws tag)*)? ws "]"
+
+iso ::= "\"" [A-Z][A-Z] "\""
+iso-list ::= "[" ws (iso (ws "," ws iso)*)? ws "]"
+
+importance ::= "1" | "2" | "3" | "4" | "5"
+
+entity-type ::= "\"" ("country" | "person" | "org" | "place" | "armed_group" | "other") "\""
+role ::= "\"" ("actor" | "target" | "affected" | "issuer" | "other") "\""
+
+entity ::= "{" ws
+  "\"name\"" ws ":" ws string "," ws
+  "\"type\"" ws ":" ws entity-type "," ws
+  "\"role\"" ws ":" ws role "," ws
+  "\"aliases\"" ws ":" ws string-list "," ws
+  "\"country_iso\"" ws ":" ws (iso | "null")
+ws "}"
+
+entity-list ::= "[" ws (entity (ws "," ws entity)*)? ws "]"
+
+string-list ::= "[" ws (string (ws "," ws string)*)? ws "]"
+
+rel-type ::= "\"" (
+  "president_of" | "pm_of" | "monarch_of" | "minister_of" |
+  "leader_of" | "member_of" | "capital_of" | "ally_of" |
+  "rival_of" | "part_of" | "other"
+) "\""
+
+rel ::= "{" ws
+  "\"src\"" ws ":" ws string "," ws
+  "\"rel\"" ws ":" ws rel-type "," ws
+  "\"dst\"" ws ":" ws string "," ws
+  "\"valid_from\"" ws ":" ws (date | "null") "," ws
+  "\"valid_to\"" ws ":" ws (date | "null") "," ws
+  "\"fact\"" ws ":" ws string
+ws "}"
+
+rel-list ::= "[" ws (rel (ws "," ws rel)*)? ws "]"
+
+pair-kind ::= "\"" ("conflict" | "diplomacy" | "politics" | "economy" | "legal" | "other") "\""
+
+pair ::= "{" ws
+  "\"a\"" ws ":" ws string "," ws
+  "\"b\"" ws ":" ws string "," ws
+  "\"kind\"" ws ":" ws pair-kind
+ws "}"
+
+pair-list ::= "[" ws (pair (ws "," ws pair)*)? ws "]"

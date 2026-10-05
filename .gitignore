@@ -1,0 +1,7 @@
+config.env
+__pycache__/
+*.pyc
+models/*.gguf
+models/Qwen3-Embedding-0.6B/
+data/llama-mcp.json
+run/

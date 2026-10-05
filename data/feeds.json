@@ -1,0 +1,314 @@
+[
+  {
+    "name": "BBC World",
+    "homepage": "https://www.bbc.com/news/world",
+    "feed_url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "BBC Mundo",
+    "homepage": "https://www.bbc.com/mundo",
+    "feed_url": "https://feeds.bbci.co.uk/mundo/rss.xml",
+    "feed_type": "rss",
+    "lang": "es",
+    "interval_minutes": 30
+  },
+  {
+    "name": "BBC Arabic",
+    "homepage": "https://www.bbc.com/arabic",
+    "feed_url": "https://feeds.bbci.co.uk/arabic/rss.xml",
+    "feed_type": "rss",
+    "lang": "ar",
+    "interval_minutes": 30
+  },
+  {
+    "name": "BBC Brasil",
+    "homepage": "https://www.bbc.com/portuguese",
+    "feed_url": "https://feeds.bbci.co.uk/portuguese/rss.xml",
+    "feed_type": "rss",
+    "lang": "pt",
+    "interval_minutes": 30
+  },
+  {
+    "name": "BBC Russian",
+    "homepage": "https://www.bbc.com/russian",
+    "feed_url": "https://feeds.bbci.co.uk/russian/rss.xml",
+    "feed_type": "rss",
+    "lang": "ru",
+    "interval_minutes": 30
+  },
+  {
+    "name": "BBC Chinese",
+    "homepage": "https://www.bbc.com/zhongwen/simp",
+    "feed_url": "https://feeds.bbci.co.uk/zhongwen/simp/rss.xml",
+    "feed_type": "rss",
+    "lang": "zh",
+    "interval_minutes": 30
+  },
+  {
+    "name": "The Guardian World",
+    "homepage": "https://www.theguardian.com/world",
+    "feed_url": "https://www.theguardian.com/world/rss",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "Al Jazeera English",
+    "homepage": "https://www.aljazeera.com/",
+    "feed_url": "https://www.aljazeera.com/xml/rss/all.xml",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "DW German",
+    "homepage": "https://www.dw.com/de",
+    "feed_url": "https://rss.dw.com/rdf/rss-de-all",
+    "feed_type": "rss",
+    "lang": "de",
+    "interval_minutes": 30
+  },
+  {
+    "name": "DW World EN",
+    "homepage": "https://www.dw.com/",
+    "feed_url": "https://rss.dw.com/rdf/rss-en-world",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "DW French",
+    "homepage": "https://www.dw.com/fr",
+    "feed_url": "https://rss.dw.com/rdf/rss-fr-news",
+    "feed_type": "rss",
+    "lang": "fr",
+    "interval_minutes": 30
+  },
+  {
+    "name": "DW Spanish",
+    "homepage": "https://www.dw.com/es",
+    "feed_url": "https://rss.dw.com/rdf/rss-es-news",
+    "feed_type": "rss",
+    "lang": "es",
+    "interval_minutes": 30
+  },
+  {
+    "name": "DW Arabic",
+    "homepage": "https://www.dw.com/ar",
+    "feed_url": "https://rss.dw.com/rdf/rss-ar-news",
+    "feed_type": "rss",
+    "lang": "ar",
+    "interval_minutes": 30
+  },
+  {
+    "name": "France 24 EN",
+    "homepage": "https://www.france24.com/en/",
+    "feed_url": "https://www.france24.com/en/rss",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "France 24 FR",
+    "homepage": "https://www.france24.com/fr/",
+    "feed_url": "https://www.france24.com/fr/rss",
+    "feed_type": "rss",
+    "lang": "fr",
+    "interval_minutes": 30
+  },
+  {
+    "name": "France 24 Afrique",
+    "homepage": "https://www.france24.com/fr/afrique/",
+    "feed_url": "https://www.france24.com/fr/afrique/rss",
+    "feed_type": "rss",
+    "lang": "fr",
+    "interval_minutes": 45
+  },
+  {
+    "name": "France 24 Arabic",
+    "homepage": "https://www.france24.com/ar/",
+    "feed_url": "https://www.france24.com/ar/rss",
+    "feed_type": "rss",
+    "lang": "ar",
+    "interval_minutes": 30
+  },
+  {
+    "name": "RFI French",
+    "homepage": "https://www.rfi.fr/fr/",
+    "feed_url": "https://www.rfi.fr/fr/rss",
+    "feed_type": "rss",
+    "lang": "fr",
+    "interval_minutes": 30
+  },
+  {
+    "name": "Tagesschau",
+    "homepage": "https://www.tagesschau.de/",
+    "feed_url": "https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml",
+    "feed_type": "rss",
+    "lang": "de",
+    "interval_minutes": 30
+  },
+  {
+    "name": "SRF News",
+    "homepage": "https://www.srf.ch/news",
+    "feed_url": "https://www.srf.ch/news/bnf/rss/1890",
+    "feed_type": "rss",
+    "lang": "de",
+    "interval_minutes": 45
+  },
+  {
+    "name": "El País",
+    "homepage": "https://elpais.com/",
+    "feed_url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada",
+    "feed_type": "rss",
+    "lang": "es",
+    "interval_minutes": 30
+  },
+  {
+    "name": "NHK News",
+    "homepage": "https://www3.nhk.or.jp/news/",
+    "feed_url": "https://www3.nhk.or.jp/rss/news/cat0.xml",
+    "feed_type": "rss",
+    "lang": "ja",
+    "interval_minutes": 30
+  },
+  {
+    "name": "RNZ Pacific",
+    "homepage": "https://www.rnz.co.nz/international/pacific-news",
+    "feed_url": "https://www.rnz.co.nz/rss/pacific.xml",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 60
+  },
+  {
+    "name": "NPR World",
+    "homepage": "https://www.npr.org/sections/world/",
+    "feed_url": "https://feeds.npr.org/1004/rss.xml",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "AP Top News",
+    "homepage": "https://apnews.com/",
+    "feed_url": "https://rsshub.app/apnews/topics/apf-topnews",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "TASS",
+    "homepage": "https://tass.com/",
+    "feed_url": "http://tass.com/rss/v2.xml",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "RT",
+    "homepage": "https://www.rt.com/",
+    "feed_url": "https://www.rt.com/rss/",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "Anti-Spiegel",
+    "homepage": "https://anti-spiegel.ru/",
+    "feed_url": "https://anti-spiegel.ru/feed/",
+    "feed_type": "rss",
+    "lang": "de",
+    "interval_minutes": 60
+  },
+  {
+    "name": "CGTN World",
+    "homepage": "https://www.cgtn.com/",
+    "feed_url": "https://www.cgtn.com/subscribe/rss/section/world.xml",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "The Hindu International",
+    "homepage": "https://www.thehindu.com/news/international/",
+    "feed_url": "https://www.thehindu.com/news/international/feeder/default.rss",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "Jerusalem Post",
+    "homepage": "https://www.jpost.com/",
+    "feed_url": "https://www.jpost.com/rss/rssfeedsisraelnews.aspx",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "Palestine News Network",
+    "homepage": "https://english.pnn.ps/",
+    "feed_url": "https://english.pnn.ps/feed",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "Mehr News",
+    "homepage": "https://en.mehrnews.com/",
+    "feed_url": "https://en.mehrnews.com/rss",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "AllAfrica",
+    "homepage": "https://allafrica.com/",
+    "feed_url": "https://allafrica.com/tools/headlines/rdf/africa/headlines.rdf",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "Daily Maverick",
+    "homepage": "https://www.dailymaverick.co.za/",
+    "feed_url": "https://www.dailymaverick.co.za/rss",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 45
+  },
+  {
+    "name": "Agência Brasil",
+    "homepage": "https://agenciabrasil.ebc.com.br/",
+    "feed_url": "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
+    "feed_type": "rss",
+    "lang": "pt",
+    "interval_minutes": 30
+  },
+  {
+    "name": "MercoPress",
+    "homepage": "https://en.mercopress.com/",
+    "feed_url": "https://en.mercopress.com/rss",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 45
+  },
+  {
+    "name": "Buenos Aires Times",
+    "homepage": "https://www.batimes.com.ar/",
+    "feed_url": "https://www.batimes.com.ar/feed/",
+    "feed_type": "rss",
+    "lang": "en",
+    "interval_minutes": 30
+  },
+  {
+    "name": "Wikipedia Current Events",
+    "homepage": "https://en.wikipedia.org/wiki/Portal:Current_events",
+    "feed_url": "https://en.wikipedia.org/w/api.php?action=parse&page=Portal:Current_events&prop=wikitext&format=json",
+    "feed_type": "wikipedia_current_events",
+    "lang": "en",
+    "interval_minutes": 90
+  }
+]

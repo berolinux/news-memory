@@ -1,0 +1,10 @@
+Rewrite only the current_status briefing for this dossier.
+
+Write a later-reader briefing: what is going on, and what built up to it. Include domestic economy and politics (taxes, inflation, protests, elections, courts) as well as wars and diplomacy. Connect events only when the sources support it ("after", "followed"); do not invent causation.
+
+Rules:
+- Use the old status plus the timeline plus the new event. Do not drop earlier load-bearing facts (a 2026 inflation spike still matters in 2028).
+- Dates and numbers stay. No new facts.
+- 150–400 words. Past tense for completed events. End with the latest state.
+- Write the briefing in {pivot_lang}. Timeline bullets may be in other languages; translate facts, do not add any.
+- Output JSON: {"current_status": "..."} only.

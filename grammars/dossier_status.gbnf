@@ -1,0 +1,5 @@
+root ::= "{" ws "\"current_status\"" ws ":" ws string ws "}"
+ws ::= [ \t\n\r]*
+string ::= "\"" chars "\""
+chars ::= char*
+char ::= [^"\\\x00-\x1F] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F])

@@ -1,0 +1,38 @@
+# Template. setup.sh replaces @PREFIX@.
+# System service, account from systemd/news-memory.sysusers.
+[Unit]
+Description=news-memory ingest pass
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=news-memory
+Group=news-memory
+WorkingDirectory=@PREFIX@
+EnvironmentFile=-@PREFIX@/config.env
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=python @PREFIX@/worker.py
+Nice=10
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=read-only
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+ReadOnlyPaths=@PREFIX@
+# The socket directory has to be writable or connect() fails under ProtectSystem=strict.
+ReadWritePaths=-/run/postgresql
+
+[Install]
+WantedBy=multi-user.target

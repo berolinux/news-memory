@@ -1,0 +1,12 @@
+# System timer. Enables with: systemctl enable --now news-memory-worker.timer
+[Unit]
+Description=Fetch and file news every 30 minutes
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=30min
+Persistent=true
+RandomizedDelaySec=90
+
+[Install]
+WantedBy=timers.target

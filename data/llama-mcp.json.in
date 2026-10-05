@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "news": {
+      "command": "python",
+      "args": ["@PREFIX@/mcp_server.py"],
+      "cwd": "@PREFIX@",
+      "timeout_ms": 120000,
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "PYTHONPATH": "@PREFIX@",
+        "NEWS_MEMORY_HOME": "@PREFIX@"
+      }
+    }
+  }
+}

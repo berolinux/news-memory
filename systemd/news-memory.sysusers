@@ -1,0 +1,3 @@
+# systemd-sysusers snippet. "u!" creates the user and a same-named group,
+# and leaves an existing account alone. Shell defaults to nologin.
+u! news-memory - "news-memory service"

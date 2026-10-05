@@ -1,0 +1,36 @@
+# Template. setup.sh replaces @PREFIX@.
+# System service, account from systemd/news-memory.sysusers.
+# models/ must exist and be writable by news-memory if this service converts a GGUF.
+[Unit]
+Description=Optional llama.cpp embedding server (Qwen3-Embedding-0.6B)
+After=network.target
+
+[Service]
+Type=simple
+User=news-memory
+Group=news-memory
+WorkingDirectory=@PREFIX@
+EnvironmentFile=-@PREFIX@/config.env
+ExecStart=@PREFIX@/embed-server.sh
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=read-only
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+ReadOnlyPaths=@PREFIX@
+ReadWritePaths=-@PREFIX@/models
+
+[Install]
+WantedBy=multi-user.target
