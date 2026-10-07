@@ -102,7 +102,9 @@ def _headers() -> dict:
     return hdrs
 
 
-def _post(url: str, payload: dict, timeout: int = 180) -> dict | None:
+def _post(url: str, payload: dict, timeout: int | None = None) -> dict | None:
+    if timeout is None:
+        timeout = config.EXTRACT_TIMEOUT
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode(),
@@ -179,8 +181,10 @@ def complete_json(user: str, system: str, grammar_file: str | None = None,
     payload = {
         "messages": messages,
         "temperature": 0.1,
-        "max_tokens": 2048,
+        "max_tokens": config.EXTRACT_MAX_TOKENS,
     }
+    if config.EXTRACT_THINKING is not None:
+        payload["chat_template_kwargs"] = {"enable_thinking": config.EXTRACT_THINKING}
     if json_schema is not None:
         payload["json_schema"] = json_schema
     elif grammar:
@@ -195,7 +199,7 @@ def complete_json(user: str, system: str, grammar_file: str | None = None,
 
     # completion endpoint fallback
     prompt = f"{system}\n\n{user}\n"
-    comp = {"prompt": prompt, "temperature": 0.1, "n_predict": 2048}
+    comp = {"prompt": prompt, "temperature": 0.1, "n_predict": config.EXTRACT_MAX_TOKENS}
     if grammar:
         comp["grammar"] = grammar
     data = _post(base + "/completion", comp)

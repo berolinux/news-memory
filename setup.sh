@@ -17,6 +17,7 @@ DB_PORT=${NEWS_MEMORY_DB_PORT:-5432}
 EMBED_MODEL=${NEWS_MEMORY_EMBED_MODEL:-}
 EXTRACT_URL=${NEWS_MEMORY_EXTRACT_URL:-http://127.0.0.1:8080}
 EMBED_URL=${NEWS_MEMORY_EMBED_URL:-http://127.0.0.1:8092}
+EMBED_DEVICE=${NEWS_MEMORY_EMBED_DEVICE:-}
 TOOLS_PORT=${NEWS_MEMORY_TOOLS_PORT:-8091}
 SKIP_EMBED=0
 SKIP_SEED=0
@@ -77,6 +78,51 @@ as_root() {
 	else
 		sudo "$@"
 	fi
+}
+
+# Device already recorded in config.env, used when the environment does not set one.
+existing_embed_device() {
+	python - "$ROOT/config.env" <<'PY'
+import sys
+from pathlib import Path
+path = Path(sys.argv[1])
+if not path.is_file():
+    raise SystemExit(0)
+for raw in path.read_text(encoding="utf-8").splitlines():
+    line = raw.strip()
+    if not line or line.startswith("#") or "=" not in line:
+        continue
+    key, val = line.split("=", 1)
+    if key.strip() != "NEWS_MEMORY_EMBED_DEVICE":
+        continue
+    val = val.strip()
+    if len(val) >= 2 and val[0] == val[-1] and val[0] in "\"'":
+        val = val[1:-1]
+    print(val)
+    break
+PY
+}
+
+# Any HTTP answer means a local chat server is bound to the extract port.
+chat_listening() {
+	python - "$EXTRACT_URL" <<'PY'
+import sys
+import urllib.error
+import urllib.request
+from urllib.parse import urlparse
+base = sys.argv[1].rstrip("/")
+host = (urlparse(base).hostname or "").lower()
+if host not in ("127.0.0.1", "localhost", "::1"):
+    raise SystemExit(1)
+req = urllib.request.Request(base + "/health", method="GET")
+try:
+    with urllib.request.urlopen(req, timeout=2) as resp:
+        raise SystemExit(0 if resp.status < 500 else 1)
+except urllib.error.HTTPError:
+    raise SystemExit(0)
+except Exception:
+    raise SystemExit(1)
+PY
 }
 
 as_service_user() {
@@ -259,6 +305,10 @@ if [ -z "$EMBED_MODEL" ]; then
 		EMBED_MODEL=$(CDPATH= cd -- "$EMBED_MODEL" && pwd)
 	fi
 fi
+if [ -z "$EMBED_DEVICE" ]; then
+	EMBED_DEVICE=$(existing_embed_device || true)
+fi
+EMBED_DEVICE=${EMBED_DEVICE:-cpu}
 
 need() {
 	command -v "$1" >/dev/null 2>&1 || {
@@ -425,7 +475,7 @@ NEWS_MEMORY_DB_HOST=$HOSTLINE
 NEWS_MEMORY_DB_PORT=$DB_PORT
 NEWS_MEMORY_EMBED_MODEL=$EMBED_MODEL
 NEWS_MEMORY_EMBED_URL=$EMBED_URL
-NEWS_MEMORY_EMBED_DEVICE=${NEWS_MEMORY_EMBED_DEVICE:-cpu}
+NEWS_MEMORY_EMBED_DEVICE=$EMBED_DEVICE
 NEWS_MEMORY_EXTRACT_URL=$EXTRACT_URL
 NEWS_MEMORY_LLAMA_SYSCONFIG=${NEWS_MEMORY_LLAMA_SYSCONFIG:-/etc/sysconfig/llama-server}
 NEWS_MEMORY_TOOLS_PORT=$TOOLS_PORT
@@ -442,7 +492,13 @@ if [ "$SKIP_SEED" -eq 0 ]; then
 	if [ "$SKIP_EMBED" -eq 1 ]; then
 		NEWS_MEMORY_EMBED_URL= NEWS_MEMORY_EMBED_LOCAL=0 \
 			PYTHONPATH=$ROOT python -m news_memory.seed
+	elif [ "$EMBED_DEVICE" != "cpu" ] && chat_listening; then
+		echo "    llama.service has the GPU, so gazetteer vectors wait for a later pass"
+		echo "    stop llama.service, then: python worker.py --embed-pending"
+		NEWS_MEMORY_EMBED_URL= NEWS_MEMORY_EMBED_LOCAL=0 \
+			PYTHONPATH=$ROOT python -m news_memory.seed
 	else
+		echo "    embedding gazetteer on $EMBED_DEVICE"
 		NEWS_MEMORY_EMBED_LOCAL=1 PYTHONPATH=$ROOT python -m news_memory.seed
 	fi
 fi

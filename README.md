@@ -12,6 +12,8 @@ OpenMandriva is the only officially supported platform. `llama.service`, `/etc/s
 |---|---|
 | `setup.sh` | Creates the database, extensions, schema, and seed data. `--download-embed` fetches the embedding model |
 | `worker.py` | Fetches feeds and files new articles |
+| `refresh-news.sh` | Files due feeds on one GPU, with the chat server stopped |
+| `updating_server.py` | Maintenance reply used while that refresh runs |
 | `data/feeds.json` | Hand-written list of news sources |
 | `mcp_server.py` | Tools for the llama.cpp Web UI, over stdio MCP |
 | `chat_proxy.py` | Apertus tool loop in front of llama-server (`:8081`) |
@@ -52,7 +54,7 @@ On the database machine:
 - Allow the application user from the llama machine in `pg_hba.conf`, then reload. A typical TCP line is `host news_memory news_memory <llama-ip>/32 scram-sha-256`.
 - Open TCP port 5432 from the llama machine.
 
-`llama.service` runs as a dynamic user. The rendered drop-in bind-mounts `/run/postgresql` so that user can use the local socket, and it allows read of this directory so the service can import the tree and read `config.env`. The socket mount is for `/run/postgresql`. A hostname in `NEWS_MEMORY_DB_HOST` is a TCP connection, which the service is already allowed to open. `config.env` has to stay readable by that service user. Mode `600` owned by your account blocks the Web UI tools from opening the database.
+`llama.service` runs as a dynamic user. The rendered drop-in bind-mounts `/run/postgresql` so that user can use the local socket, and it allows read of this directory so the service can import the tree and read `config.env`. The socket mount is for `/run/postgresql`. A hostname in `NEWS_MEMORY_DB_HOST` is a TCP connection, which the service is already allowed to open. `config.env` has to stay readable by that service user. The drop-in adds `news-memory` to `SupplementaryGroups`, merged with the groups `llama.service` already has. Mode `640` and group `news-memory` is then readable by the dynamic user and by the news-memory services. Mode `600` owned by your account blocks the Web UI tools from opening the database.
 
 Check the remote connection from the llama machine:
 
@@ -140,7 +142,7 @@ python query.py prompt
 
 If `API_KEY` is set in `/etc/sysconfig/llama-server`, clients send `Authorization: Bearer <that key>`. The worker reads the same file when it asks the chat model to file an article, unless `NEWS_MEMORY_EXTRACT_API_KEY` is set.
 
-Filing an article uses the model currently served at `NEWS_MEMORY_EXTRACT_URL` (by default the same llama-server) to turn the text into events, relations, and dossier updates. Grammars in `grammars/` hold the JSON shape. If that server is down or still loading, the article is still stored and linked to countries and other known names from the gazetteer. Semantic search uses a separate embedding model, Qwen3-Embedding-0.6B, either via `embed-server.sh` at `NEWS_MEMORY_EMBED_URL` or in-process when `NEWS_MEMORY_EMBED_LOCAL=1`. Name lookup and full-text search keep working when no embedding server is up.
+Filing an article uses the model currently served at `NEWS_MEMORY_EXTRACT_URL` (by default the same llama-server) to turn the text into events, relations, and dossier updates. Grammars in `grammars/` hold the JSON shape. If that server is down or still loading, the article is still stored and linked to countries and other known names from the gazetteer. With `NEWS_MEMORY_EXTRACT_THINKING` unset, filing omits the thinking flag and asks for at most 2048 tokens (`NEWS_MEMORY_EXTRACT_MAX_TOKENS`). Each call waits up to 180 seconds (`NEWS_MEMORY_EXTRACT_TIMEOUT`). Semantic search uses a separate embedding model, Qwen3-Embedding-0.6B, either via `embed-server.sh` at `NEWS_MEMORY_EMBED_URL` or in-process when `NEWS_MEMORY_EMBED_LOCAL=1`. Name lookup and full-text search keep working when no embedding server is up.
 
 The weights are the Hugging Face snapshot `Qwen/Qwen3-Embedding-0.6B` (about 1.2 GB, Apache-2.0). `./setup.sh` records that directory as `models/Qwen3-Embedding-0.6B` in `NEWS_MEMORY_EMBED_MODEL`. Fetch the snapshot on its own, whenever you want it:
 
@@ -199,13 +201,50 @@ Keep running and repeat every 30 minutes:
 python worker.py --loop 1800
 ```
 
-Fill embeddings for entities that do not have one yet. This flag loads Qwen3-Embedding-0.6B in-process from the Hugging Face directory in `NEWS_MEMORY_EMBED_MODEL` (`./setup.sh --download-embed` fetches it):
+Fill embeddings for entities that do not have one yet. This flag loads Qwen3-Embedding-0.6B in-process from the Hugging Face directory in `NEWS_MEMORY_EMBED_MODEL` (`./setup.sh --download-embed` fetches it). `NEWS_MEMORY_EMBED_DEVICE=cuda` runs that load on the GPU. Stop `llama.service` first, because the chat model already occupies the card. On the GPU each batch stays within 8192 padded tokens, so one long alias list does not pad a whole batch of 16 out to 2048 tokens.
 
 ```bash
+sudo systemctl stop llama.service
 python worker.py --embed-pending
+sudo systemctl start llama.service
+```
+
+Embed only rows a news pass has already touched: articles without a vector, entities with `mention_count > 0`, and dossiers that have a status, a compact body, or a timeline entry. This uses the embedding server at `NEWS_MEMORY_EMBED_URL`:
+
+```bash
+python worker.py --embed-filed
 ```
 
 The worker needs the Python modules `feedparser` and `lxml` (`python-feedparser` and `python-lxml`). Without `feedparser`, an RSS source contributes nothing.
+
+### One GPU
+
+`worker.py` is the ingest to keep when the chat server can stay up. That is the right path when the database runs on another machine and this GPU can stay on the chat model.
+
+`refresh-news.sh` is the path for one GPU. The chat model and Qwen3-Embedding both need the card, so the script runs them one after the other:
+
+1. Stops `llama.service` and answers on its public port with "The news data is being updated. Try again later."
+2. Starts the chat model on `127.0.0.1:8088` and files every feed that is due. Thinking is on for this run.
+3. Stops that model, starts the embedding model on `127.0.0.1:8092`, and embeds the rows that pass touched.
+4. Stops the embedding model, removes the maintenance reply, and starts `llama.service`.
+
+Filing uses the chat model, so it runs while that model has the GPU. Embedding runs after those rows exist. `updating_server.py` is the process bound to the public port during the window. Chat requests, including ones proxied from port 8081, receive the 503 text. A request to the proxy's own `/health` still reports the proxy.
+
+`refresh-news.sh` sets `NEWS_MEMORY_EXTRACT_THINKING=1`, `NEWS_MEMORY_EXTRACT_MAX_TOKENS` to 16384 (`NEWS_MEMORY_REFRESH_MAX_TOKENS`), and `NEWS_MEMORY_EXTRACT_TIMEOUT` to 600 seconds (`NEWS_MEMORY_REFRESH_EXTRACT_TIMEOUT`). A normal `python worker.py` leaves those at the defaults above.
+
+Feeds fetched more recently than their `interval_minutes` are skipped, the same rule as `python worker.py` with no `--force`. On an empty database every feed is due. The first run files whatever those feeds are publishing now, including the multi-day Google News windows, so the chat can stay offline for much longer than a later night.
+
+`--embed-filed` skips the untouched gazetteer. The full name list is still `python worker.py --embed-pending`.
+
+The embedding server listens on loopback. `NEWS_MEMORY_EMBED_SERVER_DEVICE` selects its GPU (the chat model's `--device`, or `Vulkan0`). `NEWS_MEMORY_EMBED_DEVICE` is the separate in-process torch device (`cpu` or `cuda`) used by `python worker.py --embed-pending`. Query-time semantic search still needs the embedding server or `NEWS_MEMORY_EMBED_LOCAL=1` once the chat model is back, because this script stops the embedding server and then starts `llama.service`.
+
+If the script stops early, it starts `llama.service` again when that service was running. A finished run starts `llama.service` either way. `run/refresh.lock` keeps a second refresh from starting.
+
+```bash
+./refresh-news.sh
+```
+
+Leave `news-memory-worker.timer` off while this script is how the archive is updated. The timer files on its own schedule through whatever server is on the extract URL.
 
 A system timer does the same one-shot pass every 30 minutes, with a short random delay. It runs as the system user `news-memory`, created from `systemd/news-memory.sysusers`, and it starts at boot rather than at login. The database role is `news-memory` as well (`--user` changes it). That is the name `peer` authentication expects.
 
@@ -215,7 +254,7 @@ sudo systemctl enable --now news-memory-worker.timer
 sudo systemctl start news-memory-worker.service
 ```
 
-`--install-units` also installs `news-memory-tools.service`, `news-memory-chat.service`, and `news-memory-embed.service` as system units under the same account. The tools unit is the Apertus API on port 8091. The embedding unit writes a converted GGUF only when `models/` exists and is writable by `news-memory`. `config.env` is left owned by the installing user, group `news-memory`, mode `640`, so the service can read it. The install directory itself has to be traversable by that user, which means it cannot live in a home directory mode `700`.
+`--install-units` also installs `news-memory-tools.service`, `news-memory-chat.service`, and `news-memory-embed.service` as system units under the same account. The tools unit is the Apertus API on port 8091. The embedding unit writes a converted GGUF only when `models/` exists and is writable by `news-memory`. `config.env` is left owned by the installing user, group `news-memory`, mode `640`, so the service can read it. The llama drop-in adds that same group to the dynamic user, which is what lets the Web UI open the file. The install directory itself has to be traversable by that user, which means it cannot live in a home directory mode `700`.
 
 See whether a pass worked:
 

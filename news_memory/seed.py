@@ -299,9 +299,29 @@ def seed_dossiers(cur) -> None:
         )
 
 
-def embed_entities(cur) -> int:
+def _embed_rows(cur, rows, text_of, table: str, batch: int) -> int:
     from . import embed as emb
 
+    if not rows:
+        return 0
+    if not emb.available():
+        raise RuntimeError(emb.unavailable_message())
+    n = 0
+    total = len(rows)
+    for i in range(0, total, batch):
+        chunk = rows[i:i + batch]
+        vecs = emb.embed([text_of(r) for r in chunk], query=False)
+        for row, vec in zip(chunk, vecs):
+            cur.execute(
+                f"UPDATE {table} SET embedding = %s::vector WHERE id = %s",
+                (vec_literal(vec), row["id"]),
+            )
+        n += len(chunk)
+        print(f"embedded {n}/{total} {table}", flush=True)
+    return n
+
+
+def embed_entities(cur) -> int:
     cur.execute(
         """
         SELECT e.id, e.canonical,
@@ -316,21 +336,86 @@ def embed_entities(cur) -> int:
     rows = cur.fetchall()
     if not rows:
         return 0
+    from . import embed as emb
+
     if not emb.available():
         return 0
-    n = 0
-    batch = 16
-    for i in range(0, len(rows), batch):
-        chunk = rows[i:i + batch]
-        texts = [f"{r['canonical']}. Also known as: {r['aliases']}" for r in chunk]
-        vecs = emb.embed(texts, query=False)
-        for row, vec in zip(chunk, vecs):
-            cur.execute(
-                "UPDATE entities SET embedding = %s::vector WHERE id = %s",
-                (vec_literal(vec), row["id"]),
+    return _embed_rows(
+        cur,
+        rows,
+        lambda r: f"{r['canonical']}. Also known as: {r['aliases']}",
+        "entities",
+        16,
+    )
+
+
+def embed_filed(cur) -> dict[str, int]:
+    """Embed rows a news pass actually touched.
+
+    The untouched gazetteer stays for embed_entities / worker --embed-pending.
+    """
+    cur.execute(
+        """
+        SELECT id, title, summary, summary_en
+        FROM articles
+        WHERE embedding IS NULL
+        ORDER BY id
+        """
+    )
+    articles = cur.fetchall()
+    cur.execute(
+        """
+        SELECT e.id, e.canonical,
+               coalesce(string_agg(a.alias, ' '), '') AS aliases
+        FROM entities e
+        LEFT JOIN entity_aliases a ON a.entity_id = e.id
+        WHERE e.embedding IS NULL AND e.mention_count > 0
+        GROUP BY e.id, e.canonical
+        ORDER BY e.id
+        """
+    )
+    entities = cur.fetchall()
+    cur.execute(
+        """
+        SELECT d.id, d.title, d.current_status, d.body_compact
+        FROM dossiers d
+        WHERE d.embedding IS NULL
+          AND (
+            d.current_status <> ''
+            OR d.body_compact <> ''
+            OR EXISTS (
+                SELECT 1 FROM dossier_timeline t WHERE t.dossier_id = d.id
             )
-            n += 1
-    return n
+          )
+        ORDER BY d.id
+        """
+    )
+    dossiers = cur.fetchall()
+    if not articles and not entities and not dossiers:
+        return {"articles": 0, "entities": 0, "dossiers": 0}
+    return {
+        "articles": _embed_rows(
+            cur,
+            articles,
+            lambda r: f"{r['title']}\n{r['summary'] or ''}\n{r['summary_en'] or ''}",
+            "articles",
+            8,
+        ),
+        "entities": _embed_rows(
+            cur,
+            entities,
+            lambda r: f"{r['canonical']}. Also known as: {r['aliases']}",
+            "entities",
+            4,
+        ),
+        "dossiers": _embed_rows(
+            cur,
+            dossiers,
+            lambda r: f"{r['title']}\n{r['current_status'] or ''}\n{r['body_compact'] or ''}",
+            "dossiers",
+            4,
+        ),
+    }
 
 
 def run() -> None:

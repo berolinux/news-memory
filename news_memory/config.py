@@ -50,6 +50,11 @@ QUERY_INSTRUCT = getenv(
 )
 
 EXTRACT_URL = getenv("NEWS_MEMORY_EXTRACT_URL", "http://127.0.0.1:8080")
+EXTRACT_MAX_TOKENS = int(getenv("NEWS_MEMORY_EXTRACT_MAX_TOKENS", "2048") or "2048")
+EXTRACT_TIMEOUT = int(getenv("NEWS_MEMORY_EXTRACT_TIMEOUT", "180") or "180")
+_thinking = getenv("NEWS_MEMORY_EXTRACT_THINKING")
+# None leaves the server's own default. "1" / "0" force the chat template flag.
+EXTRACT_THINKING = None if _thinking is None else _thinking.lower() in ("1", "true", "yes")
 LLAMA_SYSCONFIG = getenv("NEWS_MEMORY_LLAMA_SYSCONFIG", "/etc/sysconfig/llama-server")
 PIVOT_LANG = (getenv("NEWS_MEMORY_PIVOT_LANG", "en") or "en").lower()[:8]
 
